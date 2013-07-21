@@ -1,0 +1,56 @@
+"Phrases"
+{
+	"Usage: Ban"
+	{
+		"#format"		"{1:s}"
+		"en"			"Usage: {1} <time in seconds>"
+		"de"			"Benutzung: {1} <Zeit in Sekunden>"
+	}
+	"You have been banned by"
+	{
+		"#format"		"{1:s},{2:s},{3:i}"
+		"en"			"You have been banned from {1} by {2} for {3} minutes."
+		"de"			"Du wurdest gebannt von {1} bei {2} für {3} Minuten."
+	}
+	"You have been unbanned by"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"You have been unbanned from {1} by {2}."
+		"de"			"Du wurdest entbannt von {1} bei {2}."
+	}
+	"You have been unbanned"
+	{
+		"#format"		"{1:s}"
+		"en"			"Time is up. You have been unbanned from {1}."
+		"de"			"Die Zeit ist um. Du wurdest entbannt von {1}."
+	}
+	"See console output"
+	{
+		"en"			"See console for more information."
+		"de"			"Siehe Konsole für mehr informationen."
+	}
+	"Enabled"
+	{
+		"en"			"Enabled "
+		"de"			"Aktiviert    "
+	}
+
+	"Disabled"
+	{
+		"en"			"Disabled"
+		"de"			"Deaktiviert"
+		
+	}
+	"You Enabled"
+	{
+		"#format"		"{1:s}"
+		"en"			"You enabled {1}. Press and hold down your jump button to automaticly jump!"
+		"de"			"Du hast {1} eingeschaltet. Drücke und halte deine Springen taste, um automatisch zu springen!"
+	}
+	"You Disabled"
+	{
+		"#format"		"{1:s}"
+		"en"			"You disabled {1}!"
+		"de"			"Du hast {1} ausgeschaltet!"
+	}
+}
