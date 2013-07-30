@@ -34,7 +34,7 @@ P L U G I N   I N F O
 #define PLUGIN_PRINT_PREFIX		"[SM]"
 #define PLUGIN_AUTHOR			"Chanz"
 #define PLUGIN_DESCRIPTION		"Lets user auto jump when holding down space. This plugin includes the DoubleJump plugin too."
-#define PLUGIN_VERSION 			"2.14.40"
+#define PLUGIN_VERSION 			"2.15"
 #define PLUGIN_URL				"http://forums.alliedmods.net/showthread.php?p=1239361 OR http://www.mannisfunhouse.eu/"
 
 public Plugin:myinfo = {
@@ -327,6 +327,13 @@ public Action:Timer_Think(Handle:timer){
 
 
 public Action:Command_AutoJump(client, args){
+
+	if (client == 0) {
+		decl String:command[MAX_NAME_LENGTH];
+		GetCmdArg(0, command, sizeof(command));
+		ReplyToCommand(client, "%s The command %s is not usable within the server console", PLUGIN_PRINT_PREFIX, command);
+		return Plugin_Handled;
+	}
 	
 	if (g_bCooMem_Switch[client]) {
 		g_bCooMem_Switch[client] = false;
@@ -482,11 +489,11 @@ public Action:Command_Ban(client,args){
 	
 	if(bantime != 0){
 		
-		Client_PrintToConsole(client,"\n%s Banned %d players from %s for %d minutes:",PLUGIN_PRINT_PREFIX,target_count,PLUGIN_NAME,bantime);
+		Client_Reply(client,"\n%s Banned %d players from %s for %d minutes:",PLUGIN_PRINT_PREFIX,target_count,PLUGIN_NAME,bantime);
 	}
 	else {
 		
-		Client_PrintToConsole(client,"\n%s Unbanned %d players from %s:",PLUGIN_PRINT_PREFIX,target_count,PLUGIN_NAME);
+		Client_Reply(client,"\n%s Unbanned %d players from %s:",PLUGIN_PRINT_PREFIX,target_count,PLUGIN_NAME);
 	}
 	
 	new i=0;
@@ -507,7 +514,7 @@ public Action:Command_Ban(client,args){
 	
 	Client_PrintToConsole(client,"\n-----------------------\n");
 	
-	if(bantime != 0){
+	if(bantime != 0 && client != 0){
 		
 		Client_PrintToChat(client,false,"{R}%s %t",PLUGIN_PRINT_PREFIX,"See console output");
 	}
