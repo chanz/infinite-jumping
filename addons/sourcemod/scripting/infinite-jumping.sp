@@ -38,7 +38,7 @@
 #include <sdktools>
 #include <smlib>
 #include <smlib/pluginmanager>
-#include <baseplayerkeys>
+//#include <baseplayerkeys>
 #include <config>
 
 #undef REQUIRE_PLUGIN
@@ -179,7 +179,7 @@ public OnPluginStart()
 		
 		// prepare title for clientPref menu
 		decl String:menutitle[64];
-		Format(menutitle, sizeof(menutitle), "%s",PLUGIN_NAME);
+		Format(menutitle, sizeof(menutitle), "%s", Plugin_Name);
 		SetCookieMenuItem(PrefMenu, 0, menutitle);
 		
 		//Cookies
@@ -255,7 +255,7 @@ DisplaySettingsMenu(client){
 	decl String:MenuItem[128];
 	new Handle:prefmenu = CreateMenu(PrefMenuHandler);
 	
-	Format(MenuItem, sizeof(MenuItem), "%s", PLUGIN_NAME);
+	Format(MenuItem, sizeof(MenuItem), "%s", Plugin_Name);
 	SetMenuTitle(prefmenu, MenuItem);
 	
 	new String:checked[] = String:0x9A88E2;
@@ -280,11 +280,11 @@ public PrefMenuHandler(Handle:prefmenu, MenuAction:action, client, item){
 		
 		if (g_bCooMem_Switch[client]) {
 			SetClientCookie(client, g_hCookie_Switch, "on");
-			Client_PrintToChat(client,false,"{B}%s %t",PLUGIN_PRINT_PREFIX,"You Enabled",PLUGIN_NAME);
+			Client_PrintToChat(client,false,"{B}%s %t",Plugin_Tag,"You Enabled",Plugin_Name);
 		}
 		else {
 			SetClientCookie(client, g_hCookie_Switch, "off");
-			Client_PrintToChat(client,false,"{R}%s %t",PLUGIN_PRINT_PREFIX,"You Disabled",PLUGIN_NAME);
+			Client_PrintToChat(client,false,"{R}%s %t",Plugin_Tag,"You Disabled",Plugin_Name);
 		}
 		
 		DisplaySettingsMenu(client);
@@ -311,7 +311,7 @@ public Action:Timer_Think(Handle:timer){
 		
 		if(!Client_IsBanned(client) && g_bIsBanned[client]){
 			g_bIsBanned[client] = false;
-			Client_PrintToChat(client,false,"{B}%s %t",PLUGIN_PRINT_PREFIX,"You have been unbanned",PLUGIN_NAME);
+			Client_PrintToChat(client,false,"{B}%s %t",Plugin_Tag,"You have been unbanned",Plugin_Name);
 		}
 	}
 	return Plugin_Continue;
@@ -344,17 +344,17 @@ public Action:Command_AutoJump(client, args){
 	
 	if (g_bCooMem_Switch[client]) {
 		g_bCooMem_Switch[client] = false;
-		Client_PrintToChat(client, false, "{R}%s %t",PLUGIN_PRINT_PREFIX,"You Disabled",PLUGIN_NAME);
+		Client_PrintToChat(client, false, "{R}%s %t",Plugin_Tag,"You Disabled",Plugin_Name);
 		
-		if (g_bCookiesEnabled) {
+		if (g_bClientPrefs_Loaded) {
 			SetClientCookie(client, g_hCookie_Switch, "off");
 		}
 	}
 	else {
 		g_bCooMem_Switch[client] = true;
-		Client_PrintToChat(client, false, "{B}%s %t",PLUGIN_PRINT_PREFIX,"You Enabled",PLUGIN_NAME);
+		Client_PrintToChat(client, false, "{B}%s %t",Plugin_Tag,"You Enabled",Plugin_Name);
 		
-		if (g_bCookiesEnabled) {
+		if (g_bClientPrefs_Loaded) {
 			SetClientCookie(client, g_hCookie_Switch, "on");
 		}
 	}
@@ -365,7 +365,7 @@ public Action:Command_Ban(client,args){
 	if(args < 1){
 		decl String:command[32];
 		GetCmdArg(0,command,sizeof(command));
-		Client_Reply(client,"%s %t",PLUGIN_PRINT_PREFIX,"Usage: Ban",command);
+		Client_Reply(client,"%s %t",Plugin_Tag,"Usage: Ban",command);
 		return Plugin_Handled;
 	}
 	
@@ -398,11 +398,11 @@ public Action:Command_Ban(client,args){
 	
 	if(bantime != 0){
 		
-		Client_PrintToConsole(client,"\n%s Banned %d players from %s for %d minutes:",PLUGIN_PRINT_PREFIX,target_count,PLUGIN_NAME,bantime);
+		Client_PrintToConsole(client,"\n%s Banned %d players from %s for %d minutes:",Plugin_Tag,target_count,Plugin_Name,bantime);
 	}
 	else {
 		
-		Client_PrintToConsole(client,"\n%s Unbanned %d players from %s:",PLUGIN_PRINT_PREFIX,target_count,PLUGIN_NAME);
+		Client_PrintToConsole(client,"\n%s Unbanned %d players from %s:",Plugin_Tag,target_count,Plugin_Name);
 	}
 	
 	new i=0;
@@ -425,7 +425,7 @@ public Action:Command_Ban(client,args){
 	
 	if(bantime != 0){
 		
-		Client_PrintToChat(client,false,"{R}%s %t",PLUGIN_PRINT_PREFIX,"See console output");
+		Client_PrintToChat(client,false,"{R}%s %t",Plugin_Tag,"See console output");
 	}
 	
 	return Plugin_Handled;
@@ -496,12 +496,12 @@ BanClient(client,banner,bantime){
 	g_iCooMem_BanTime[client] = GetTime()+bantime*60;
 	IntToString(bantime,szTime,sizeof(szTime));
 	
-	if(g_bCookiesEnabled){
+	if(g_bClientPrefs_Loaded){
 		SetClientCookie(client,g_hCookie_BanTime,szTime);
 	}
 	g_bIsBanned[client] = true;
 	
-	Client_PrintToChat(client,false,"{R}%s %t",PLUGIN_PRINT_PREFIX,"You have been banned by",PLUGIN_NAME,bannerName,bantime);
+	Client_PrintToChat(client,false,"{R}%s %t",Plugin_Tag,"You have been banned by",Plugin_Name,bannerName,bantime);
 }
 UnBanClient(client,banner){
 	
@@ -510,12 +510,12 @@ UnBanClient(client,banner){
 	
 	g_iCooMem_BanTime[client] = 0;
 	
-	if(g_bCookiesEnabled){
+	if(g_bClientPrefs_Loaded){
 		SetClientCookie(client,g_hCookie_BanTime,"0");
 	}
 	g_bIsBanned[client] = false;
 	
-	Client_PrintToChat(client,false,"{R}%s %t",PLUGIN_PRINT_PREFIX,"You have been unbanned by",PLUGIN_NAME,bannerName);
+	Client_PrintToChat(client,false,"{R}%s %t",Plugin_Tag,"You have been unbanned by",Plugin_Name,bannerName);
 }
 bool:Client_IsBanned(client){
 	
