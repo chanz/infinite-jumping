@@ -10,7 +10,7 @@
 	{
 		"#format"		"{1:s},{2:s},{3:i}"
 		"en"			"You have been banned from {1} by {2} for {3} minutes."
-		"de"			"Du wurdest gebannt von {1} bei {2} für {3} Minuten."
+		"de"			"Du wurdest gebannt von {1} bei {2} fÃ¼r {3} Minuten."
 	}
 	"You have been unbanned by"
 	{
@@ -27,7 +27,7 @@
 	"See console output"
 	{
 		"en"			"See console for more information."
-		"de"			"Siehe Konsole für mehr informationen."
+		"de"			"Siehe Konsole fÃ¼r mehr informationen."
 	}
 	"Enabled"
 	{
@@ -45,7 +45,7 @@
 	{
 		"#format"		"{1:s}"
 		"en"			"You enabled {1}. Press and hold down your jump button to automaticly jump!"
-		"de"			"Du hast {1} eingeschaltet. Drücke und halte deine Springen taste, um automatisch zu springen!"
+		"de"			"Du hast {1} eingeschaltet. DrÃ¼cke und halte deine Springen taste, um automatisch zu springen!"
 	}
 	"You Disabled"
 	{
