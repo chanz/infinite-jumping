@@ -10,5 +10,5 @@ Commit messages are squashed, that means the history of feature-pluginmanager is
 ```
 git remote add smlib git@github.com:bcserv/smlib.git
 // folder addons/sourcemod must exist!
-git merge --squash -srecursive -Xsubtree=addons/sourcemod smlib/feature-pluginmanager
+git merge --squash -srecursive -Xsubtree=addons/sourcemod --strategy-option theirs  smlib/feature-pluginmanager
 ```
