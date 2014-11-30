@@ -8,5 +8,7 @@ Merging smlib updates
 To update smlib: We will merge the latest smlib/feature-pluginmanager into addons/sourcemod.
 Commit messages are squashed, that means the history of feature-pluginmanager is compressed to one commit.
 ```
+git remote add smlib git@github.com:bcserv/smlib.git
+// folder addons/sourcemod must exist!
 git merge --squash -srecursive -Xsubtree=addons/sourcemod smlib/feature-pluginmanager
 ```
