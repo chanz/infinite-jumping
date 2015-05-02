@@ -4,7 +4,7 @@
 #define _smlib_files_included
 
 #include <sourcemod>
-#include <sdktools_stringtables>
+#include <sdktools>
 #include <smlib/arrays>
 
 /**
@@ -145,7 +145,7 @@ stock File_AddToDownloadsTable(const String:path[], bool:recursive=true, const S
 
 	if (FileExists(path)) {
 		
-		new String:fileExtension[4];
+		new String:fileExtension[5];
 		File_GetExtension(path, fileExtension, sizeof(fileExtension));
 		
 		if (StrEqual(fileExtension, "bz2", false) || StrEqual(fileExtension, "ztmp", false)) {
@@ -265,32 +265,194 @@ stock File_ReadDownloadList(const String:path[])
 }
 
 /*
- * Attempts to load a translation file and unloads the plugin if the file doesn't exist.
+ * Attempts to load a translation file and optionally unloads the plugin if the file
+ * doesn't exist (also prints an error message).
  *
- * @param file		Filename of the translations file (eg. <pluginname>.phrases).
- * @noreturn
+ * @param file			Filename of the translations file (eg. <pluginname>.phrases).
+ * @param setFailState	If true, it sets the failstate if the translations file doesn't exist
+ * @return				True on success, false otherwise (only if setFailState is set to false)
  */
-stock File_LoadTranslations(const String:file[])
+stock File_LoadTranslations(const String:file[], setFailState=true)
 {
 	decl String:path[PLATFORM_MAX_PATH];
-	
-	Format(path,sizeof(path),"translations/%s",file);
-	
-	BuildPath(Path_SM, path, sizeof(path), path);
-	
+
+	BuildPath(Path_SM, path, sizeof(path), "translations/%s", file);
+
 	if (FileExists(path)) {
 		LoadTranslations(file);
-		return;
+		return true;
 	}
-	
-	Format(path,sizeof(path),"%s.txt",path);
-	
-	if (FileExists(path)) {
-		LoadTranslations(file);
-		return;
+
+	Format(path,sizeof(path), "%s.txt", path);
+
+	if (!FileExists(path)) {
+
+		if (setFailState) {
+			SetFailState("Unable to locate translation file (%s).", path);
+		}
+
+		return false;
 	}
-	
-	SetFailState("Unable to locate translation file (%s).",path);
+
+	LoadTranslations(file);
+
+	return true;
 }
 
+/*
+ * Reads the contents of a given file into a string buffer in binary mode.
+ *
+ * @param path		Path to the file
+ * @param buffer	String buffer
+ * @param size		If -1, reads until a null terminator is encountered in the file.  Otherwise, read_count bytes are read into the buffer provided.  In this case the buffer is not explicitly null terminated, and the buffer will contain any null terminators read from the file.
+ * @return			Number of characters written to the buffer, or -1 if an error was encountered.
+ */
+stock File_ToString(const String:path[], String:buffer[], size)
+{
+	new Handle:file = OpenFile(path, "rb");
 
+	if (file == INVALID_HANDLE) {
+		buffer[0] = '\0';
+		return -1;
+	}
+
+	new num_bytes_written = ReadFileString(file, buffer, size);
+	CloseHandle(file);
+
+	return num_bytes_written;
+}
+
+/*
+ * Writes a string into a file in binary mode.
+ *
+ * @param file		Path to the file
+ * @param str		String to write
+ * @return			True on success, false otherwise
+ */
+stock bool:File_StringToFile(const String:path[], String:str[])
+{
+	new Handle:file = OpenFile(path, "wb");
+
+	if (file == INVALID_HANDLE) {
+		return false;
+	}
+
+	new bool:success = WriteFileString(file, str, false);
+	CloseHandle(file);
+
+	return success;
+}
+
+/*
+ * Copies file source to destination
+ * Based on code of javalia:
+ * http://forums.alliedmods.net/showthread.php?t=159895
+ *
+ * @param source		Input file
+ * @param destination	Output file
+ */
+stock bool:File_Copy(const String:source[], const String:destination[])
+{
+	new Handle:file_source = OpenFile(source, "rb");
+
+	if (file_source == INVALID_HANDLE) {
+		return false;
+	}
+
+	new Handle:file_destination = OpenFile(destination, "wb");
+
+	if (file_destination == INVALID_HANDLE) {
+		CloseHandle(file_source);
+		return false;
+	}
+
+	new buffer[32];
+	new cache;
+
+	while (!IsEndOfFile(file_source)) {
+		cache = ReadFile(file_source, buffer, 32, 1);
+		WriteFile(file_destination, buffer, cache, 1);
+	}
+
+	CloseHandle(file_source);
+	CloseHandle(file_destination);
+
+	return true;
+}
+
+/*
+ * Recursively copies (the content) of a directory or file specified
+ * by "path" to "destination".
+ * Note that because of Sourcemod API limitations this currently does not
+ * takeover the file permissions (it leaves them default).
+ * Links will be resolved.
+ *
+ * @param path			Source path
+ * @param destination	Destination directory (This can only be a directory)
+ * @param stop_on_error	Optional: Set to true to stop on error (ie can't read a file)
+ * @param dirMode		Optional: File mode for directories that will be created (Default = 0755), don't forget to convert FROM octal
+ */
+stock bool:File_CopyRecursive(const String:path[], const String:destination[], bool:stop_on_error=false, dirMode=493)
+{
+	if (FileExists(path)) {
+		return File_Copy(path, destination);
+	}
+	else if (DirExists(path)) {
+		return Sub_File_CopyRecursive(path, destination, stop_on_error, FileType_Directory, dirMode);
+	}
+	else {
+		return false;
+	}
+}
+
+static stock bool:Sub_File_CopyRecursive(const String:path[], const String:destination[], bool:stop_on_error=false, FileType:fileType, dirMode)
+{
+	if (fileType == FileType_File) {
+		return File_Copy(path, destination);
+	}
+	else if (fileType == FileType_Directory) {
+
+		if (!CreateDirectory(destination, dirMode) && stop_on_error) {
+			return false;
+		}
+
+		new Handle:directory = OpenDirectory(path);
+
+		if (directory == INVALID_HANDLE) {
+			return false;
+		}
+
+		decl
+			String:source_buffer[PLATFORM_MAX_PATH],
+			String:destination_buffer[PLATFORM_MAX_PATH];
+		new FileType:type;
+
+		while (ReadDirEntry(directory, source_buffer, sizeof(source_buffer), type)) {
+
+			if (StrEqual(source_buffer, "..") || StrEqual(source_buffer, ".")) {
+				continue;
+			}
+
+			Format(destination_buffer, sizeof(destination_buffer), "%s/%s", destination, source_buffer);
+			Format(source_buffer, sizeof(source_buffer), "%s/%s", path, source_buffer);
+
+			if (type == FileType_File) {
+				File_Copy(source_buffer, destination_buffer);
+			}
+			else if (type == FileType_Directory) {
+
+				if (!File_CopyRecursive(source_buffer, destination_buffer, stop_on_error, dirMode) && stop_on_error) {
+					CloseHandle(directory);
+					return false;
+				}
+			}
+		}
+
+		CloseHandle(directory);
+	}
+	else if (fileType == FileType_Unknown) {
+		return false;
+	}
+
+	return true;
+}
